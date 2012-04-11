@@ -6,6 +6,7 @@ import android.os.Bundle;
 // -------------------------------------------------------------------------
 /**
  *  This is the main activity class for the Mastermind game.
+ *  Testing (chris schweinhart)
  *
  *  @author nkibler7
  *  @version Apr 4, 2012
