@@ -3,5 +3,7 @@
 
     <string name="hello">Hello World, MastermindActivity!</string>
     <string name="app_name">Mastermind</string>
+    <color name="lightGreen">#B4EEB4</color>
+    <string name="startString">Start!</string>
 
 </resources>

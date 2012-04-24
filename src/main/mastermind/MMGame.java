@@ -1,5 +1,6 @@
 package main.mastermind;
 
+import java.util.Observable;
 import android.graphics.Color;
 
 /**
@@ -9,7 +10,7 @@ import android.graphics.Color;
  *  @author  Chris Schweinhart (schwein)
  *  @version 2012.04.17
  */
-public class MMGame
+public class MMGame extends Observable
 {
     // Instance fields
     private Color[] code;
