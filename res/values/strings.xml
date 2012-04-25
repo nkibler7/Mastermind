@@ -5,5 +5,17 @@
     <string name="app_name">Mastermind</string>
     <color name="lightGreen">#B4EEB4</color>
     <string name="startString">Start!</string>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="gray">#A6A6A6</color>
+    
+    <style name="Dialog" parent="@android:style/Theme.Dialog">
+            <item name="android:windowTitleStyle">@style/DialogTitle</item>
+    </style>
+    <style name="DialogTitle" parent="@android:style/TextAppearance.DialogWindowTitle">
+            <item name="android:gravity">center_horizontal</item>
+            <item name="android:textSize">24dp</item>
+            <item name="android:textStyle">bold</item>
+    </style>
 
 </resources>

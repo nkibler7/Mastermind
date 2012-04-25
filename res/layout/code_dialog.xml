@@ -4,53 +4,55 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
-
+
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
         android:gravity="center_horizontal"
         android:text="Choose your color code:"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textSize="20dp" />
+        android:textColor="@color/white"
+        android:textSize="20dp" />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="36dp" >
-
+
         <main.mastermind.CodeCircleView
-            android:id="@+id/codeCircleView2"
+            android:id="@+id/code1"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_marginLeft="15dp"
+            android:layout_marginLeft="20dp"
             android:layout_weight="1" />
 
         <main.mastermind.CodeCircleView
-            android:id="@+id/codeCircleView4"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_weight="1" />
-
-        <main.mastermind.CodeCircleView
-            android:id="@+id/codeCircleView3"
+            android:id="@+id/code2"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_weight="1" />
 
         <main.mastermind.CodeCircleView
-            android:id="@+id/codeCircleView1"
+            android:id="@+id/code3"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_weight="1" />
+
+        <main.mastermind.CodeCircleView
+            android:id="@+id/code4"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_weight="1" />
     </LinearLayout>
-
+
     <Button
         android:id="@+id/doneButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="25dp"
         android:layout_marginRight="25dp"
+        android:layout_marginTop="10dp"
         android:text="Done" />
 
 </LinearLayout>

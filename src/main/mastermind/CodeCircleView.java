@@ -20,6 +20,7 @@ public class CodeCircleView extends View
 {
     private int fill = Color.BLUE;
     private int index = 0;
+    private boolean clickable = true;
 
     // ----------------------------------------------------------
     /**
@@ -53,8 +54,12 @@ public class CodeCircleView extends View
         paint.setColor(fill);
         Paint outside = new Paint();
         outside.setColor(Color.WHITE);
+
+        paint.setAntiAlias(true);
+        outside.setAntiAlias(true);
         canvas.drawCircle(25, 25, 25, outside);
         canvas.drawCircle(25, 25, 21, paint);
+
     }
 
     /**
@@ -64,11 +69,29 @@ public class CodeCircleView extends View
      * @param event - the MotionEvent object that occurred
      */
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_UP) {
+        if (clickable && event.getAction() == MotionEvent.ACTION_UP) {
             advanceColor();
             postInvalidate();
         }
         return true;
     }
 
+    // ----------------------------------------------------------
+    /**
+     * Returns the fill color of this circle.
+     * @return fill - the integer representation of a color
+     */
+    public int getColor() {
+        return fill;
+    }
+
+    // ----------------------------------------------------------
+    /**
+     * Makes the circle clickable or not, depending on the argument.
+     * @param newClickable - true if it should be able to be clicked, false
+     * otherwise
+     */
+    public void changeClickable(boolean newClickable) {
+        this.clickable = newClickable;
+    }
 }

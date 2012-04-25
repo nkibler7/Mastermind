@@ -12,12 +12,8 @@ import android.graphics.Color;
  */
 public class MMGame extends Observable
 {
-    // Instance fields
-    private Color[] code;
     private int[] codeData;
-    private Color[][] guesses;
-    private int[][] clues;
-    private int current;
+    private int rightSpotNum;
 
     // Constants
     public static final int GAME_LENGTH = 10;
@@ -29,93 +25,41 @@ public class MMGame extends Observable
      *
      * @param codeInput  The code to be used for checking guesses
      */
-    public MMGame(Color[] codeInput)
+    public MMGame(int[] codeInput)
     {
-        code = codeInput;
-        codeData = getData(code);
-        guesses = new Color[GAME_LENGTH][COMBINATION_LENGTH];
-        clues = new int[GAME_LENGTH][2];
-        current = 0;
-    }
-
-    /**
-     * Helper method to determine the data for a given combination
-     *
-     * @param  combination  The given combination to break down
-     * @return int[]        The Color breakdown for the combination (ROYGB)
-     */
-    private int[] getData(Color[] combination)
-    {
-        int[] result = new int[NUM_COLORS];
-
-        for(Color compare : combination)
-        {
-            if (compare.equals(Color.RED))
-            {
-                result[0]++;
-            }
-            if (compare.equals(Color.rgb(255, 165, 0)))
-            {
-                result[1]++;
-            }
-            if (compare.equals(Color.YELLOW))
-            {
-                result[2]++;
-            }
-            if (compare.equals(Color.GREEN))
-            {
-                result[3]++;
-            }
-            if (compare.equals(Color.BLUE))
-            {
-                result[4]++;
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Method to add a new guess to the game
-     *
-     * @param combination  The guess to be added and processed
-     */
-    public void addGuess(Color[] combination)
-    {
-        guesses[current] = combination;
-
-        clues[current] = calculateClue(combination);
-
-        current++;
+        codeData = codeInput;
     }
 
     /**
      * Helper method to calculate the clue given the combination
      *
-     * @param  guess  The given guess to find clue for
+     * @param guessData - the color ids for the guess
      * @return int[]  The clue for the given guess
      */
-    private int[] calculateClue(Color[] guess)
+    public int[] calculateClue(int[] guessData)
     {
-        int[] guessData = getData(guess);
+        int[] result = {0, 0};
 
-        int[] result = new int[2];
-
-        for (int index = 0; index < guess.length; index++)
+        for (int index = 0; index < guessData.length; index++)
         {
-            if (code[index].equals(guess[index]))
+            if (codeData[index] == guessData[index])
             {
                 result[0]++;
             }
         }
 
-        for (int index = 0; index < guess.length; index++)
+        for (int index = 0; index < guessData.length; index++)
         {
-            result[1]+= Math.min(codeData[index], guessData[index]);
+            for (int i = 0; i < guessData.length; i++) {
+                if (guessData[i] != 0 && codeData[index] == guessData[i]) {
+                    result[1]++;
+                    guessData[i] = 0;
+                    break;
+                }
+            }
         }
-
         result[1] -= result[0];
-
+        rightSpotNum = result[0];
         return result;
     }
 
@@ -126,31 +70,6 @@ public class MMGame extends Observable
      */
     public boolean isWon()
     {
-        if (current == 0)
-        {
-            return false;
-        }
-
-        return calculateClue(guesses[current--])[0] == COMBINATION_LENGTH;
-    }
-
-    /**
-     * Method to get the guess matrix for GUI display
-     *
-     * @return Color[][]  The current set of guesses
-     */
-    protected Color[][] getGuesses()
-    {
-        return guesses;
-    }
-
-    /**
-     * Method to get the clue matrix for GUI display
-     *
-     * @return int[][]  The current set of clues
-     */
-    protected int[][] getClues()
-    {
-        return clues;
+        return rightSpotNum == 4;
     }
 }

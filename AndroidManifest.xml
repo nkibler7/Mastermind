@@ -11,15 +11,14 @@
         android:label="@string/app_name" >
         <activity
             android:name=".MastermindActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="PlayingScreenActivity"></activity>
-        <activity android:name="CodeToast"></activity>
+        <activity android:name="PlayingScreenActivity" android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>
