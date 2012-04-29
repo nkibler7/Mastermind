@@ -78,6 +78,15 @@ public class CodeCircleView extends View
 
     // ----------------------------------------------------------
     /**
+     * Sets the color of this circle to the argument.
+     * @param color - the integer representation of a color
+     */
+    public void setColor(int color) {
+        fill = color;
+    }
+
+    // ----------------------------------------------------------
+    /**
      * Returns the fill color of this circle.
      * @return fill - the integer representation of a color
      */

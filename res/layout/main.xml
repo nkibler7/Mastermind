@@ -17,7 +17,7 @@
         android:textSize="48dp" />
 
     <RadioGroup
-        android:id="@+id/radioGroup2"
+        android:id="@+id/playerGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
@@ -58,13 +58,13 @@
             android:textSize="24dp" />
 
         <RadioGroup
-            android:id="@+id/radioGroup1"
+            android:id="@+id/gameGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
 
             <RadioButton
-                android:id="@+id/radio0"
+                android:id="@+id/one"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
@@ -75,7 +75,7 @@
                 android:textSize="20dp" />
 
             <RadioButton
-                android:id="@+id/radio1"
+                android:id="@+id/three"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -83,7 +83,7 @@
                 android:textSize="20dp" />
 
             <RadioButton
-                android:id="@+id/radio2"
+                android:id="@+id/five"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

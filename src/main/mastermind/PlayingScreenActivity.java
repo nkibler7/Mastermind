@@ -1,5 +1,6 @@
 package main.mastermind;
 
+import android.widget.TextView;
 import android.graphics.Color;
 import android.content.DialogInterface;
 import android.app.AlertDialog;
@@ -27,6 +28,7 @@ public class PlayingScreenActivity extends Activity
 {
     //Dialog window that asks for the code input.
     private Dialog codeDialog;
+    private Dialog finishDialog;
     private SharedPreferences settings;
     private static final String PREFS_NAME = "MastermindData";
     private MMGame game;
@@ -35,6 +37,7 @@ public class PlayingScreenActivity extends Activity
     private PegCircleView[] pegs = new PegCircleView[4];
     private CodeAdapter codeAdapter;
     private PegAdapter pegAdapter;
+    private int gameNum, maxGames;
 
     /** Called when the activity is first created. */
     @Override
@@ -53,10 +56,21 @@ public class PlayingScreenActivity extends Activity
             pegs[i].setPadding(0, 5, 0, 5);
         }
 
+        gameNum = settings.getInt("gameNum", 0);
+        maxGames = settings.getInt("maxGames", 0);
+
         GridView codeView = (GridView) findViewById(R.id.codeView);
         codeView.setNumColumns(4);
         codeAdapter = new CodeAdapter();
         codeView.setAdapter(codeAdapter);
+
+        TextView playerTwo = (TextView) findViewById(R.id.playerTwo);
+        playerTwo.setText(settings.getString("player2Type", ""));
+
+        TextView playerOnePoints = (TextView) findViewById(R.id.playerOnePoints);
+        playerOnePoints.setText("" + settings.getInt("p1score", 0));
+        TextView playerTwoPoints = (TextView) findViewById(R.id.playerTwoPoints);
+        playerTwoPoints.setText("" + settings.getInt("p2score", 0));
 
         GridView pegView = (GridView) findViewById(R.id.pegView);
         pegView.setNumColumns(2);
@@ -69,7 +83,7 @@ public class PlayingScreenActivity extends Activity
         codeDialog = new Dialog(PlayingScreenActivity.this,
             R.style.Dialog);
         codeDialog.setContentView(R.layout.code_dialog);
-        codeDialog.setTitle("Player 1");
+        codeDialog.setTitle("Player " + (settings.getInt("playerNum", 1) + 1));
 
         Button done = (Button) codeDialog.findViewById(R.id.doneButton);
         done.setOnClickListener(new View.OnClickListener() {
@@ -90,9 +104,31 @@ public class PlayingScreenActivity extends Activity
                     + code3.getColor() + code4.getColor();
                 editor.putString("secretCode", code);
                 editor.commit();
-                System.out.println(code);
                 PlayingScreenActivity.this.codeDialog.dismiss();
                 developGame();
+
+                DialogInterface.OnClickListener dialogClickListener =
+                    new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+                            break;
+                        }
+
+                    }
+                };
+                String playerTurn = "";
+                if (settings.getInt("playerNum", 0) == 1) {
+                    playerTurn = "Player 1's";
+                }
+                else {
+                    playerTurn = settings.getString("player2Type", "") + "'s";
+                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+                builder.setMessage("It's " + playerTurn + " turn!")
+                    .setPositiveButton("Ok", dialogClickListener);
+                builder.show();
             }
         });
         codeDialog.show();
@@ -197,7 +233,7 @@ public class PlayingScreenActivity extends Activity
 
     private class SubmitListener implements OnClickListener {
 
-        public void onClick(View v)
+        public void onClick(final View v)
         {
             int[] guessData = new int[4];
             for (int i = 0; i < 4; i++) {
@@ -205,31 +241,118 @@ public class PlayingScreenActivity extends Activity
                 guessData[i] = circles[position].getColor();
             }
             int[] pegData = game.calculateClue(guessData);
-            if (game.isWon()) {
-                DialogInterface.OnClickListener dialogClickListener =
-                    new DialogInterface.OnClickListener() {
+            AlertDialog.Builder builder = null;
+            if (game.isWon() || game.isLost()) {
+                if (settings.getInt("playerNum", 0) == 0) {
+                    gameNum++;
+                }
+                finishDialog = new Dialog(PlayingScreenActivity.this,
+                    R.style.Dialog);
+                finishDialog.setContentView(R.layout.finish_dialog);
+                String player = settings.getString("player2Type", "");
+                int num = settings.getInt("playerNum", 0);
+                if (player.equals("Player 2") && num == 0) {
+                    player = "Player 1";
+                }
+                finishDialog.setTitle(player + ": Game "
+                    + gameNum + "/" + maxGames);
 
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                        case DialogInterface.BUTTON_POSITIVE:
-                            SharedPreferences.Editor editor = settings.edit();
+                if (game.isWon()) {
+                    TextView winLostText = (TextView)
+                        finishDialog.findViewById(R.id.winLostText);
+                    winLostText.setText("You guessed right! The code was:");
+                }
+
+                Button lostButton = (Button) finishDialog.findViewById(R.id.lostButton);
+                if (gameNum < maxGames || settings.getInt("playerNum", 0) == 0) {
+                    lostButton.setText("Play Next Round");
+                }
+                CodeCircleView code1 =
+                    (CodeCircleView) finishDialog.findViewById(R.id.lostCode1);
+                CodeCircleView code2 =
+                    (CodeCircleView) finishDialog.findViewById(R.id.lostCode2);
+                CodeCircleView code3 =
+                    (CodeCircleView) finishDialog.findViewById(R.id.lostCode3);
+                CodeCircleView code4 =
+                    (CodeCircleView) finishDialog.findViewById(R.id.lostCode4);
+                code1.changeClickable(false);
+                code2.changeClickable(false);
+                code3.changeClickable(false);
+                code4.changeClickable(false);
+                code1.setColor(game.getColorSolutionAt(0));
+                code2.setColor(game.getColorSolutionAt(1));
+                code3.setColor(game.getColorSolutionAt(2));
+                code4.setColor(game.getColorSolutionAt(3));
+                lostButton.setOnClickListener(new View.OnClickListener() {
+
+                    public void onClick(View view)
+                    {
+                        SharedPreferences.Editor editor = settings.edit();
+                        @SuppressWarnings("hiding")
+                        int player = settings.getInt("playerNum", 0);
+                        if (player == 0) {
+                            player = 2;
+                        }
+                        else {
+                            player = 1;
+                        }
+                        int pscore = settings.getInt("p" + player + "score", 0);
+                        pscore += game.getScore();
+                        editor.putInt("p" + player + "score", pscore);
+                        editor.commit();
+                        if (gameNum < maxGames || settings.getInt("playerNum", 0) != 1) {
+
+                            editor.putInt("gameNum", gameNum);
+                            int playerNum = settings.getInt("playerNum", 0);
+                            playerNum = (playerNum + 1) % 2;
+                            editor.putInt("playerNum", playerNum);
+
+                            editor.commit();
+                            finishDialog.dismiss();
+                            finish();
+                            startActivity(getIntent());
+                        }
+                        else {
+                            PlayingScreenActivity.this.finishDialog.dismiss();
+                            AlertDialog.Builder finish = new AlertDialog.Builder(PlayingScreenActivity.this);
+                            String winner = "";
+                            if (settings.getInt("p1score", 0) > settings.getInt("p2score", 0)) {
+                                winner = "Player 1 has won!";
+                            }
+                            else if (settings.getInt("p1score", 0) < settings.getInt("p2score", 0)) {
+                                if (settings.getString("player2Type", "").equals("Computer")) {
+                                    winner = "The computer has won!";
+                                }
+                                else {
+                                    winner = "Player 2 has won!";
+                                }
+                            }
+                            else {
+                                winner = "Both players have tied!";
+                            }
+                            String message = "Player 1: " + settings.getInt("p1score", 0)
+                                + ", " + settings.getString("player2Type", "") + ": "
+                                + settings.getInt("p2score", 0);
+
+                            finish.setTitle(winner).setMessage(message)
+                                .setPositiveButton("Return to Menu", new DialogInterface.OnClickListener() {
+
+                                    public void onClick(
+                                        DialogInterface dialog,
+                                        int which)
+                                    {
+                                        finish();
+                                    }
+                                });
                             editor.clear();
                             editor.commit();
-                            finish();
-                            Intent intent = new Intent(null,
-                                MastermindActivity.class);
-                            startActivity(intent);
-                            break;
+                            finish.show();
                         }
-
                     }
-                };
-                AlertDialog.Builder builder = new AlertDialog.
-                    Builder(getBaseContext());
-                builder.setMessage("Congrats! You guessed it correctly!")
-                    .setPositiveButton("Return to Menu", dialogClickListener);
+                });
+                finishDialog.show();
             }
-            if (circles.length < 40) {
+            else if (builder == null && circles.length < 40) {
                 int oldRows = rows;
                 addRow();
                 CodeCircleView[] newCircles = new CodeCircleView[rows * 4];
@@ -263,12 +386,12 @@ public class PlayingScreenActivity extends Activity
 
                 GridView codeView = (GridView) findViewById(R.id.codeView);
                 codeAdapter.notifyDataSetChanged();
-                codeView.smoothScrollToPosition(50);
+                codeView.smoothScrollToPosition(100);
                 codeView.invalidate();
 
                 GridView pegView = (GridView) findViewById(R.id.pegView);
                 pegAdapter.notifyDataSetChanged();
-                pegView.smoothScrollToPosition(50);
+                pegView.smoothScrollToPosition(100);
                 pegView.invalidate();
 
             }

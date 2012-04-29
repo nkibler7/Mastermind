@@ -14,6 +14,7 @@ public class MMGame extends Observable
 {
     private int[] codeData;
     private int rightSpotNum;
+    private int guessNum = 0;
 
     // Constants
     public static final int GAME_LENGTH = 10;
@@ -60,6 +61,7 @@ public class MMGame extends Observable
         }
         result[1] -= result[0];
         rightSpotNum = result[0];
+        guessNum++;
         return result;
     }
 
@@ -71,5 +73,33 @@ public class MMGame extends Observable
     public boolean isWon()
     {
         return rightSpotNum == 4;
+    }
+
+    // ----------------------------------------------------------
+    /**
+     * Returns the score based on the number of guesses that have been made.
+     * @return the score between 0 and 100
+     */
+    public int getScore() {
+        return 110 - (guessNum * 10);
+    }
+
+    // ----------------------------------------------------------
+    /**
+     * Returns the color of the solution code at the specified position.
+     * @param pos - the position (0-3) of the color to find
+     * @return codeData[pos] the color of the solution circle
+     */
+    public int getColorSolutionAt(int pos) {
+        return codeData[pos];
+    }
+
+    // ----------------------------------------------------------
+    /**
+     * Determines if the game is lost.
+     * @return true if the game is lost, false otherwise
+     */
+    public boolean isLost() {
+        return !isWon() && guessNum >= 10;
     }
 }
