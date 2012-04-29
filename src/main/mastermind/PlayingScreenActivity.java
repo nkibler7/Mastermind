@@ -1,5 +1,7 @@
 package main.mastermind;
 
+import android.os.Message;
+import android.os.Handler;
 import android.widget.TextView;
 import android.graphics.Color;
 import android.content.DialogInterface;
@@ -38,6 +40,11 @@ public class PlayingScreenActivity extends Activity
     private CodeAdapter codeAdapter;
     private PegAdapter pegAdapter;
     private int gameNum, maxGames;
+    private boolean compSolve = false;
+    private Solve solver = new Solve();
+    private static final int REFRESH = 1;
+    private int[] guess = null;
+    private MastermindAI ai = null;
 
     /** Called when the activity is first created. */
     @Override
@@ -83,7 +90,14 @@ public class PlayingScreenActivity extends Activity
         codeDialog = new Dialog(PlayingScreenActivity.this,
             R.style.Dialog);
         codeDialog.setContentView(R.layout.code_dialog);
-        codeDialog.setTitle("Player " + (settings.getInt("playerNum", 1) + 1));
+        String title = "";
+        if (settings.getString("player2Type", "").equals("Computer")) {
+            title = "Computer";
+        }
+        else {
+            title = "Player " + (settings.getInt("playerNum", 1) + 1);
+        }
+        codeDialog.setTitle(title);
 
         Button done = (Button) codeDialog.findViewById(R.id.doneButton);
         done.setOnClickListener(new View.OnClickListener() {
@@ -112,10 +126,14 @@ public class PlayingScreenActivity extends Activity
 
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
-                        case DialogInterface.BUTTON_POSITIVE:
-                            break;
+                            case DialogInterface.BUTTON_POSITIVE:
+                                if (settings.getString("player2Type", "").equals("Computer")
+                                    && settings.getInt("playerNum", 0) == 0) {
+                                    compSolve = true;
+                                }
+                                dialog.cancel();
+                                break;
                         }
-
                     }
                 };
                 String playerTurn = "";
@@ -127,13 +145,26 @@ public class PlayingScreenActivity extends Activity
                 }
                 AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
                 builder.setMessage("It's " + playerTurn + " turn!")
-                    .setPositiveButton("Ok", dialogClickListener);
-                builder.show();
+                .setPositiveButton("Ok", dialogClickListener);
+                builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+
+                    public void onCancel(DialogInterface dialog)
+                    {
+                        dialog.dismiss();
+                        solver = new Solve();
+
+                        hRefresh.sendEmptyMessage(REFRESH);
+
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.setCanceledOnTouchOutside(true);
+                dialog.show();
+
             }
         });
         codeDialog.show();
     }
-
     // ----------------------------------------------------------
     /**
      * Creates the secret code based on saved information.
@@ -169,6 +200,7 @@ public class PlayingScreenActivity extends Activity
     public MMGame getGame() {
         return game;
     }
+
 
     // ----------------------------------------------------------
     /**
@@ -227,6 +259,9 @@ public class PlayingScreenActivity extends Activity
             PegCircleView pegView = pegs[position];
 
             pegView.setVisibility(PegCircleView.VISIBLE);
+            if (position == pegs.length - 1 && !(position <= 4)) {
+                hRefresh.sendEmptyMessage(REFRESH);
+            }
             return pegView;
         }
     }
@@ -335,15 +370,15 @@ public class PlayingScreenActivity extends Activity
                                 + settings.getInt("p2score", 0);
 
                             finish.setTitle(winner).setMessage(message)
-                                .setPositiveButton("Return to Menu", new DialogInterface.OnClickListener() {
+                            .setPositiveButton("Return to Menu", new DialogInterface.OnClickListener() {
 
-                                    public void onClick(
-                                        DialogInterface dialog,
-                                        int which)
-                                    {
-                                        finish();
-                                    }
-                                });
+                                public void onClick(
+                                    DialogInterface dialog,
+                                    int which)
+                                {
+                                    finish();
+                                }
+                            });
                             editor.clear();
                             editor.commit();
                             finish.show();
@@ -394,6 +429,74 @@ public class PlayingScreenActivity extends Activity
                 pegView.smoothScrollToPosition(100);
                 pegView.invalidate();
 
+
+            }
+        }
+    }
+
+    private void touchView(View view) {
+        view.performClick();
+    }
+
+    Handler hRefresh = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch(msg.what){
+                case REFRESH:
+                    /*Refresh UI*/
+                    solver.run();
+                    break;
+            }
+        }
+    };
+    private class Solve extends Thread {
+        public void run() {
+
+            if (!game.isWon() && !game.isLost()) {
+                if (ai == null) {
+                    ai = new MastermindAI();
+                }
+                if (guess == null) {
+                    guess = ai.guess(0, 0);
+                }
+                CodeCircleView[] myCircles = {circles[circles.length - 4],
+                    circles[circles.length - 3], circles[circles.length - 2],
+                    circles[circles.length - 1]};
+                for (int i = 0; i < myCircles.length; i++) {
+                    if (myCircles[i].getColor() != guess[i]) {
+                        try
+                        {
+                            Thread.sleep(300);
+                        }
+                        catch (InterruptedException e)
+                        {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        myCircles[i].setColor(guess[i]);
+                    }
+                }
+                Button submit = (Button) findViewById(R.id.submitButton);
+                if (submit != null) {
+                    touchView(submit);
+                    PegCircleView[] myPegs = new PegCircleView[0];
+                    if (pegs.length >= 8) {
+                        myPegs = new PegCircleView[4];
+                        for (int i = 0; i < 4; i++) {
+                            myPegs[i] = pegs[(pegs.length + i) - 8];
+                        }
+                    }
+                    int numWhite = 0, numBlack = 0;
+                    for (int i = 0; i < myPegs.length; i++) {
+                        if (myPegs[i].getColor() == Color.WHITE) {
+                            numWhite++;
+                        }
+                        else if (myPegs[i].getColor() == Color.BLACK) {
+                            numBlack++;
+                        }
+                    }
+                    guess = ai.guess(numBlack, numWhite);
+                }
             }
         }
     }

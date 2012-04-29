@@ -64,5 +64,13 @@ public class PegCircleView extends View
         canvas.drawCircle(12, 12, 10, paint);
     }
 
+    // ----------------------------------------------------------
+    /**
+     * Returns the color of this peg.
+     * @return black or white
+     */
+    public int getColor() {
+        return fill;
+    }
 
 }
