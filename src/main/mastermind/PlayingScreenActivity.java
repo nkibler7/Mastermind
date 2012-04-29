@@ -151,9 +151,12 @@ public class PlayingScreenActivity extends Activity
                     public void onCancel(DialogInterface dialog)
                     {
                         dialog.dismiss();
-                        solver = new Solve();
 
-                        hRefresh.sendEmptyMessage(REFRESH);
+                        if (settings.getString("player2Type", "").equals("Computer")) {
+                            solver = new Solve();
+
+                            hRefresh.sendEmptyMessage(REFRESH);
+                        }
 
                     }
                 });
@@ -259,7 +262,8 @@ public class PlayingScreenActivity extends Activity
             PegCircleView pegView = pegs[position];
 
             pegView.setVisibility(PegCircleView.VISIBLE);
-            if (position == pegs.length - 1 && !(position <= 4)) {
+            if (position == pegs.length - 1 && !(position <= 4)
+                && settings.getString("player2Type", "").equals("Computer")) {
                 hRefresh.sendEmptyMessage(REFRESH);
             }
             return pegView;
@@ -286,7 +290,7 @@ public class PlayingScreenActivity extends Activity
                 finishDialog.setContentView(R.layout.finish_dialog);
                 String player = settings.getString("player2Type", "");
                 int num = settings.getInt("playerNum", 0);
-                if (player.equals("Player 2") && num == 0) {
+                if (player.equals("Player 2") && num == 1) {
                     player = "Player 1";
                 }
                 finishDialog.setTitle(player + ": Game "
